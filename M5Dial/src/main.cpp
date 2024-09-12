@@ -13,18 +13,14 @@
     各機能のON/OFFを行う
 
 */
-
-#include "main.hpp"
-
 #include <Adafruit_NeoPixel.h>
-#include <M5Dial.h>
-#include <M5Unified.h>
+#include <SPIFFS.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
+#include "M5Dial.h"
 #include "RFIDTagJson.hpp"
 #include "RFIDUart.hpp"
-#include "config.h"
 #include "pathImageFile.h"
 
 #define LED_PIN    13  // INが接続されているピンを指定
@@ -35,6 +31,11 @@ Adafruit_NeoPixel pixels(NUM_PIXELS, LED_PIN,
 #define HEIGHT_INTERVAL        40
 #define READING_INTERVAL       30
 #define READING_CLEAR_INTERVAL 100
+
+auto ssid = "maruyama";
+auto pass = "marufuck";
+auto host = "host";
+auto token = "token";
 
 RFIDTagJson tagJson;
 RFIDUart rfidUart;
@@ -289,7 +290,6 @@ void send_line() {
 }
 
 void setup() {
-    M5_BEGIN();
     auto cfg = M5.config();
     M5Dial.begin(cfg, true, false);
 
@@ -311,8 +311,6 @@ void setup() {
 
     SPIFFS.begin();
 
-    M5_UPDATE();
-
     startLedTask();
     delay(100);
     startTagExistTask();
@@ -321,7 +319,6 @@ void setup() {
 
 void loop() {
     M5Dial.update();
-    // M5_UPDATE();
 
     // 状態によりループ関数を切り替える
     switch (currentLoops) {
@@ -329,11 +326,11 @@ void loop() {
             if (currentLoops != oldLoops) {
                 oldPosition = newPosition;
                 if (isExistTag) {
-                    M5.Lcd.drawJpgFile(SPIFFS, existTagImage[tagImageIndex], 0,
-                                       0);
+                    M5Dial.Lcd.drawJpgFile(SPIFFS, existTagImage[tagImageIndex],
+                                           0, 0);
                 } else {
-                    M5.Lcd.drawJpgFile(SPIFFS, notExistTagImage[tagImageIndex],
-                                       0, 0);
+                    M5Dial.Lcd.drawJpgFile(
+                        SPIFFS, notExistTagImage[tagImageIndex], 0, 0);
                 }
                 oldLoops = currentLoops;
             }
@@ -385,9 +382,10 @@ void loop_menu() {
     if (isExistTagOld != isExistTag) {
         M5Dial.Speaker.tone(8000, 20);
         if (isExistTag) {
-            M5.Lcd.drawJpgFile(SPIFFS, existTagImage[tagImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, existTagImage[tagImageIndex], 0, 0);
         } else {
-            M5.Lcd.drawJpgFile(SPIFFS, notExistTagImage[tagImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, notExistTagImage[tagImageIndex], 0,
+                                   0);
             send_line();
         }
         isExistTagOld = isExistTag;
@@ -401,9 +399,10 @@ void loop_menu() {
         oldPosition = newPosition;
         // 選択肢をもとに画像の切り替え
         if (isExistTag) {
-            M5.Lcd.drawJpgFile(SPIFFS, existTagImage[tagImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, existTagImage[tagImageIndex], 0, 0);
         } else {
-            M5.Lcd.drawJpgFile(SPIFFS, notExistTagImage[tagImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, notExistTagImage[tagImageIndex], 0,
+                                   0);
         }
     }
 
@@ -574,15 +573,16 @@ void loop_addTag() {
 void changeOnOffImage() {
     if (isLedOn) {
         if (isBuzzerOn) {
-            M5.Lcd.drawJpgFile(SPIFFS, onOnImage[settingImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, onOnImage[settingImageIndex], 0, 0);
         } else {
-            M5.Lcd.drawJpgFile(SPIFFS, onOffImage[settingImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, onOffImage[settingImageIndex], 0, 0);
         }
     } else {
         if (isBuzzerOn) {
-            M5.Lcd.drawJpgFile(SPIFFS, offOnImage[settingImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, offOnImage[settingImageIndex], 0, 0);
         } else {
-            M5.Lcd.drawJpgFile(SPIFFS, offOffImage[settingImageIndex], 0, 0);
+            M5Dial.Lcd.drawJpgFile(SPIFFS, offOffImage[settingImageIndex], 0,
+                                   0);
         }
     }
 }
